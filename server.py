@@ -6,9 +6,12 @@ import tornado.web
 import tornado.httpserver
 import tornado.websocket
 from tornado.ioloop import PeriodicCallback
-import json
+import json, asyncio
 
 from wlm import WavelengthMeter
+
+if sys.platform == 'win32':
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 # all connected browsers will be here
 clients = []

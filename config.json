@@ -1,4 +1,13 @@
 {
 	"precision": 5,
-	"port": 8000
+	"port": 8000,
+	"channels": [
+		{ "i": 0, "label": "Up Leg"},
+		{ "i": 2, "label": "D1"},
+		{ "i": 3, "label": "K Repump"},
+		{ "i": 4, "label": "Down Leg"},
+		{ "i": 5, "label": "Rb Trap"},
+		{ "i": 6, "label": "Rb Repump"}
+	],
+	"root": "/wavemeter/"
 }
