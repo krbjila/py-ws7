@@ -88,7 +88,7 @@ function parseData(d){
     for (var ch = 0; ch < d.length; ch++) {
         var element = $('#wl'+ch).parent();
         if(d[ch]>100){
-            var wl = d[ch].toFixed(precision);
+            var wl = (299792.458/d[ch]).toFixed(precision);
             $('#wl'+ch).html(wl);
             // recalc background only if wavelength changed by 1nm or more
             if(Math.abs(d[ch]-oldData[ch])>1){
