@@ -4,6 +4,7 @@ Module to work with Angstrom WS7 wavelength meter
 
 import argparse
 import ctypes, os, sys, random, time
+from datetime import datetime
 
 class WavelengthMeter:
 
@@ -15,6 +16,7 @@ class WavelengthMeter:
         self.channels = []
         self.dllpath = dllpath
         self.debug = debug
+        self.times = 8*[0]
         if not debug:
             self.dll = ctypes.WinDLL(dllpath)
             self.dll.GetWavelengthNum.restype = ctypes.c_double
@@ -35,7 +37,9 @@ class WavelengthMeter:
 
     def GetWavelength(self, channel=1):
         if not self.debug:
-            return self.dll.GetWavelengthNum(ctypes.c_long(channel), ctypes.c_double(0))
+            wl = self.dll.GetWavelengthNum(ctypes.c_long(channel), ctypes.c_double(0))
+            self.times[channel-1] = datetime.now()
+            return wl
         else:
             wavelengths = [460.8618, 689.2643, 679.2888, 707.2016, 460.8618*2, 0, 0, 0]
             if channel>5:
@@ -61,8 +65,16 @@ class WavelengthMeter:
         return [self.GetWavelength(i+1) for i in range(8)]
 
     @property
+    def times(self):
+        return self.times
+
+    @property
     def wavelength(self):
         return self.GetWavelength(1)
+
+    @property
+    def time(self):
+        return self.times[0]
 
     @property
     def switcher_mode(self):

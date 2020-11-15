@@ -40,9 +40,10 @@ class ApiHandler(tornado.web.RequestHandler):
     """Creates simple HTTP API if you don't like websockets"""
     def get(self, channel=None):
         w = wlmeter.wavelengths
+        t = wlmeter.times
         sw = wlmeter.switcher_mode
         if channel is None:
-            self.write({ "wavelengths": w, "switcher_mode": sw })
+            self.write({ "wavelengths": w, "times": t,"switcher_mode": sw })
         else:
             ch = int(channel)
             if ch >=0 and ch<len(w):
