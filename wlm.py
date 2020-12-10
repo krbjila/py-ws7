@@ -5,6 +5,7 @@ Module to work with Angstrom WS7 wavelength meter
 import argparse
 import ctypes, os, sys, random, time
 from datetime import datetime
+import serial
 
 class WavelengthMeter:
 
@@ -22,6 +23,11 @@ class WavelengthMeter:
             self.dll.GetWavelengthNum.restype = ctypes.c_double
             self.dll.GetFrequencyNum.restype = ctypes.c_double
             self.dll.GetSwitcherMode.restype = ctypes.c_long
+        self.ser = serial.Serial("COM3", 9600, timeout=1)
+        self.ser.setRTS(False)
+        self.ser.setDTR(True)
+        self.freq = 0
+        self.waiting = False
 
     def GetExposureMode(self):
         if not self.debug:
@@ -67,10 +73,23 @@ class WavelengthMeter:
     def wavelength(self):
         return self.GetWavelength(1)
 
+    async def get_freq(self):
+        if self.waiting:
+            if self.ser.in_waiting > 9:
+                self.waiting = False
+                try:
+                    data = self.ser.read(self.ser.in_waiting).decode('utf-8')
+                    self.freq = float(data.split(" ")[0])
+                except Exception as e:
+                    print("could not get frequency counter value: {}".format(e))
+        else:
+            self.ser.write("D0\r".encode())
+            self.waiting = True
+
     @property
     def time(self):
         return self.recordtime
-
+        
     @property
     def switcher_mode(self):
         if not self.debug:

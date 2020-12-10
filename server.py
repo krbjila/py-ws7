@@ -5,7 +5,8 @@ import tornado.ioloop
 import tornado.web
 import tornado.httpserver
 import tornado.websocket
-from tornado.ioloop import PeriodicCallback
+import tornado.gen
+from tornado.ioloop import PeriodicCallback, IOLoop
 import json, asyncio
 
 from wlm import WavelengthMeter
@@ -45,8 +46,9 @@ class ApiHandler(tornado.web.RequestHandler):
         w = wlmeter.wavelengths
         t = wlmeter.time
         sw = wlmeter.switcher_mode
+        freq = wlmeter.freq
         if channel is None:
-            self.write({ "wavelengths": w, "time": t,"switcher_mode": sw })
+            self.write({ "wavelengths": w, "time": t,"switcher_mode": sw, "freq": freq})
         else:
             ch = int(channel)
             if ch >=0 and ch<len(w):
@@ -154,6 +156,13 @@ if __name__ == "__main__":
 
     # periodic callback takes update rate in ms
     PeriodicCallback(send_data, config["update_rate"]*1000).start()
+    # PeriodicCallback(wlmeter.get_freq, 1000).start()
+
+    async def get_freq():
+        while True:
+            await wlmeter.get_freq()
+            await tornado.gen.sleep(1)
+    IOLoop.current().spawn_callback(get_freq)
 
     tornado.ioloop.IOLoop.instance().start()
 
