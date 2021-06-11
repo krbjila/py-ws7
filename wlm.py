@@ -23,9 +23,12 @@ class WavelengthMeter:
             self.dll.GetWavelengthNum.restype = ctypes.c_double
             self.dll.GetFrequencyNum.restype = ctypes.c_double
             self.dll.GetSwitcherMode.restype = ctypes.c_long
-        self.ser = serial.Serial("COM3", 9600, timeout=1)
-        self.ser.setRTS(False)
-        self.ser.setDTR(True)
+        try:
+            self.ser = serial.Serial("COM5", 9600, timeout=1)
+            self.ser.setRTS(False)
+            self.ser.setDTR(True)
+        except Exception as e:
+            print("Could not connect to frequency counter")
         self.freq = 0
         self.waiting = False
 
@@ -75,16 +78,19 @@ class WavelengthMeter:
 
     async def get_freq(self):
         if self.waiting:
-            if self.ser.in_waiting > 9:
-                self.waiting = False
-                try:
+            try:
+                if self.ser.in_waiting > 9:
+                    self.waiting = False
                     data = self.ser.read(self.ser.in_waiting).decode('utf-8')
                     self.freq = float(data.split(" ")[0])
-                except Exception as e:
-                    print("could not get frequency counter value: {}".format(e))
+            except Exception as e:
+                print("could not get frequency counter value: {}".format(e))
         else:
-            self.ser.write("D0\r".encode())
-            self.waiting = True
+            try:
+                self.ser.write("D0\r".encode())
+                self.waiting = True
+            except Exception as e:
+                pass
 
     @property
     def time(self):
